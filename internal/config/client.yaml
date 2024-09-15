@@ -1,0 +1,4 @@
+host: "localhost"
+port: 8080
+filePath: "./file_to_send.txt"
+destination: "received_file.txt"

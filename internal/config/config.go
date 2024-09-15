@@ -2,31 +2,38 @@ package config
 
 import (
 	"fmt"
+	"io/ioutil"
+	"path/filepath"
 
-	"github.com/spf13/viper"
+	"gopkg.in/yaml.v2"
 )
 
 type Config struct {
-	Host        string
-	Port        int
-	FilePath    string
-	Destination string
+	Host        string `yaml:"host"`
+	Port        int    `yaml:"port"`
+	FilePath    string `yaml:"filePath"`
+	Destination string `yaml:"destination"`
 }
 
 func Load(configType string) (*Config, error) {
-	viper.SetConfigName(configType)
-	viper.AddConfigPath(".")
-	viper.AddConfigPath("./config")
-	viper.SetConfigType("yaml")
+	configPath := filepath.Join("config", configType+".yaml")
+	fmt.Printf("Attempting to read config file: %s\n", configPath)
 
-	if err := viper.ReadInConfig(); err != nil {
+	data, err := ioutil.ReadFile(configPath)
+	if err != nil {
 		return nil, fmt.Errorf("failed to read config file: %w", err)
 	}
 
+	fmt.Println("File contents:")
+	fmt.Println(string(data))
+
 	var cfg Config
-	if err := viper.Unmarshal(&cfg); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal config: %w", err)
+	err = yaml.Unmarshal(data, &cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse YAML: %w", err)
 	}
+
+	fmt.Printf("Parsed config: %+v\n", cfg)
 
 	return &cfg, nil
 }
